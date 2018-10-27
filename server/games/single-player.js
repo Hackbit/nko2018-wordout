@@ -56,7 +56,7 @@ class SinglePlayerGame extends EventEmitter {
     }
 
     getPoints() {
-        return this.state.points();
+        return this.state.points;
     }
 
     isInGame() {

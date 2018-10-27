@@ -1,36 +1,47 @@
 <template>
-  <div id="app">
-    <div id="nav">
-        <h1>Wordingout</h1>
+    <div id="app">
+
+        <background></background>
+        <div class="page">
+            <div id="nav">
+                <word class="title" word="Wordout"></word>
+            </div>
+            <router-view/>
+        </div>
     </div>
-    <router-view/>
-  </div>
 </template>
 
 <script lang="ts">
     import { Component, Vue } from 'vue-property-decorator';
+    import Background from './components/background';
+    import Word from './components/word';
 
-    @Component
+    @Component({
+        components: {
+            Background,
+            Word
+        }
+    })
     export default class AppComponent extends Vue {
     }
 </script>
 
 <style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
+    @import "./css/_variables.scss";
+    html {
+        background: $primary;
+        font-family: Helvetica, Arial, sans-serif;
     }
-  }
-}
+
+    .title {
+        margin-top: 55px;
+    }
+
+    .page {
+        width: 100vw;
+        height: 100vh;
+        left: 0;
+        top: 0;
+        position: absolute;
+    }
 </style>

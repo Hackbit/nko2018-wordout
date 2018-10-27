@@ -92,7 +92,6 @@ class Dictionary {
     }
 
     sanitize(word) {
-        console.log(word);
         return (word || '').toLocaleLowerCase().trim();
     }
 

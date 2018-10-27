@@ -3,7 +3,7 @@
         <div v-if="hasEnded">
             <h1>Times Up!</h1>
             <p>
-                You scored {{points}} in total!
+                You scored {{points}} points in total!
                 Words per minute: {{ wpm }}
             </p>
         </div>
@@ -59,6 +59,11 @@
                 this.letter = letter.toUpperCase();
                 this.count = count;
                 this.timeLeft = this.time;
+
+                this.points = 0;
+                this.words = [];
+                this.hasEnded = false;
+                this.currentWord = '';
                 this.updateTimer(false);
             });
 
