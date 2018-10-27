@@ -1,5 +1,9 @@
 <template>
   <div class="home">
+      <button>SINGLE PLAYER</button>
+      <button>2 PLAYER</button>
+      <button>GLOBAL</button>
+      <button>ACHIEVEMENTS</button>
   </div>
 </template>
 
@@ -10,5 +14,5 @@ import { Component, Vue } from 'vue-property-decorator';
   components: {
   },
 })
-export default class Home extends Vue {}
+export default class Start extends Vue {}
 </script>

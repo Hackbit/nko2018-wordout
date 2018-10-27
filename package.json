@@ -1,0 +1,21 @@
+{
+  "name": "wordout",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "install:server": "npm install --prefix ./server",
+    "install:web": "npm install --prefix ./web",
+    "build": "npm run build --prefix ./web",
+    "heroku-postbuild": "npm run install:server && npm run install:web && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hackbit/nko2018-wordout.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hackbit/nko2018-wordout/issues"
+  },
+  "homepage": "https://github.com/Hackbit/nko2018-wordout#readme"
+}
