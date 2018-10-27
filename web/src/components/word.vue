@@ -17,7 +17,7 @@
             type: String,
             default: ''
         })
-        public word: string;
+        public word!: string;
 
         get letters(): string[] {
             return this.word.split('');

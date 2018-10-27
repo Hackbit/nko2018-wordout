@@ -13,8 +13,9 @@
 
 <script lang="ts">
     import { Component, Vue } from 'vue-property-decorator';
-    import Background from './components/background';
-    import Word from './components/word';
+
+    import Background from './components/background.vue';
+    import Word from './components/word.vue';
 
     @Component({
         components: {

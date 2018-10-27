@@ -22,8 +22,8 @@
         public letters: ILetter[] = [];
         public isAnimating: boolean = true;
 
-        private lastFrame: number;
-        private ctx: CanvasRenderingContext2D;
+        private lastFrame!: number;
+        private ctx!: CanvasRenderingContext2D;
 
         randomLetter(): string {
             const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -98,7 +98,7 @@
             const canvas = (this.$refs.canvas as HTMLCanvasElement);
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            this.ctx = canvas.getContext('2d');
+            this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
             this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let i = 0; i < 100; i++) {
