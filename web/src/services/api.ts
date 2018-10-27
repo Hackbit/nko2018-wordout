@@ -20,8 +20,12 @@ export class Api {
         return await socket.call('add', word) as IAddResponse;
     }
 
-    public async startGame(): Promise<IStartResponse> {
-        return await socket.call('start') as IStartResponse;
+    public async startGame(time: number = 60): Promise<IStartResponse> {
+        return await socket.call('start', time) as IStartResponse;
+    }
+
+    public onGameEnd(handler: () => void) {
+        return socket.addHandler('game-end', handler);
     }
 }
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { dictionary } = require('../services/dictionary');
-const { randomLetter } = require('../utils/rand');
+const { SinglePlayerGame } = require('../games/single-player');
 
 const ERRORS = {
     GAME_NOT_STARTED: 'GAME_NOT_STARTED',
@@ -11,23 +11,22 @@ const ERRORS = {
 
 module.exports = (app) => {
     app.ws('/ws', (ws) => {
-        const state = {
-            isInGame: false,
-            words: new Set(),
-            letter: '',
-            points: 0,
-        };
 
         ws.on('message', (message) => {
             try {
                 const data = JSON.parse(message);
+                const send = (payload) => {
+                    if (ws && ws.status)
+                    ws.send(JSON.stringify(payload));
+                }
                 const reply = (payload, error = false) => {
-                    ws.send(JSON.stringify({
+                    send({
                         id: data.id,
                         isError: error,
                         payload,
-                    }));
+                    });
                 };
+                const game = new SinglePlayerGame();
 
                 if (data.id && data.endpoint) {
                     switch (data.endpoint) {
@@ -36,41 +35,33 @@ module.exports = (app) => {
                                 isWord: dictionary.isWord(data.payload),
                             });
                         case 'add':
-                            if (!state.isInGame) {
+                            if (!game.isInGame()) {
                                 return reply(ERRORS.GAME_NOT_STARTED, true);
                             }
 
-                            const sanitized = dictionary.sanitize(data.payload);
-                            const isValid = dictionary.isWord(sanitized) && sanitized.startsWith(state.letter);
-                            const isCommon = dictionary.isCommon(sanitized);
-                            const isDuplicated = state.words.has(sanitized);
-
-                            if (isValid && !isDuplicated) {
-                                state.words.add(sanitized);
-                                state.points += isCommon ? 5 : 10;
-                            }
-
                             return reply({
-                                isDuplicated,
-                                isValid,
-                                isCommon,
-                                points: state.points,
-                                totalWords: state.words.length
+                                ...game.addWord(data.payload),
+                                points: game.getPoints(),
                             });
                         case 'start':
-                            if (state.isInGame) {
+                            if (game.isInGame()) {
                                 return reply(ERRORS.GAME_ALREADY_STARTED, true);
                             }
 
-                            setTimeout(() => {});
+                            game.start(data.payload || 60);
 
-                            state.isInGame = true;
-                            state.words = new Set();
-                            state.points = 0;
-                            state.letter = randomLetter();
+                            game.onGameEnd(() => {
+                                send({
+                                    type: 'game-end',
+                                    payload: {
+                                        totalPoints: game.getPoints(),
+                                    },
+                                })
+                            });
+
                             return reply({
-                                letter: state.letter,
-                                count: dictionary.count(state.letter),
+                                letter: game.getLetter(),
+                                count: game.getTotalWordCountForLetter(),
                             });
 
                     }
