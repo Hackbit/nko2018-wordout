@@ -12,7 +12,7 @@ dictionary.load().then(() => {
     const fileLoc = path.join(__dirname, '../web/dist');
     const app = express();
 
-    const socket = expressWs(app);
+    expressWs(app);
     app.use(logger('dev'));
     app.use(express.json());
     app.use(express.urlencoded({extended: false}));
@@ -28,7 +28,7 @@ dictionary.load().then(() => {
         res.sendFile(`${fileLoc}/index.html`);
     });
 
-    app.listen(8080, () => {
+    app.listen(80, () => {
         console.log('App Started');
     });
 });
