@@ -8,7 +8,7 @@ const Events = {
 };
 
 class Player {
-    constructor(isHost, ws) {
+    constructor(ws, isHost) {
         this.ws = ws;
         this.points = 0;
         this.isHost = isHost;
@@ -65,16 +65,19 @@ class TwoPlayerGame extends EventEmitter {
         this.reset();
         this.state.letter = randomLetter();
         this.state.isInGame = true;
+        console.log('STARTED GAME', this.state.isInGame);
 
         if (time !== 0 && time > 0) {
             this.timer = setTimeout(() => {
                 this.state.isInGame = false;
+                this.state.playersReady = 0;
                 this.emit(Events.END);
             }, time * 1000);
         }
     }
 
     getPlayerFromWs(ws) {
+        console.log('Checking for user,', this.getPlayers().length);
         return this.getPlayers().find(({ ws: socket }) => ws === socket);
     }
 
@@ -89,8 +92,13 @@ class TwoPlayerGame extends EventEmitter {
     addPlayer(ws, joinKey) {
         const players = this.getPlayers().length;
 
-        if (!this.isInGame() && players >= 2) {
+        if (!this.isInGame() && players >= 2 && this.state.playersReady === 2) {
             throw 'ERORR_IN_PLAY';
+        }
+
+        if (players === 2) {
+            this.state.playersReady++;
+            return;
         }
 
         if (players === 0 && joinKey === null) {
@@ -98,7 +106,9 @@ class TwoPlayerGame extends EventEmitter {
         }
 
         const player = new Player(ws, this.state.players.length === 0);
+        this.state.playersReady++;
         this.state.players.push(player);
+
 
         ws.on('close', () => {
             console.log('REMOVING GAME');
@@ -178,6 +188,7 @@ class TwoPlayerGame extends EventEmitter {
             key = dictionary.getRandomWord();
         }
 
+        console.log('SETTING JOIN KEY', this.state.joinKey);
         this.state.joinKey = key;
         Games.set(key.toUpperCase(), this);
     }
@@ -213,6 +224,7 @@ class TwoPlayerGame extends EventEmitter {
             joinKey: null,
             words: new Set(),
             isInProgress: false,
+            playersReady: 0,
             letter: '',
             players: [
             ],

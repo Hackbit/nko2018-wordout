@@ -93,7 +93,7 @@ module.exports = (app, expWs) => {
                             return reply(true);
                         case 'add':
                             if ((!currentGame || !currentGame.isInGame()) && currentGame !== globalChallenge) {
-                                console.log('- Cannot add word, no longer in a game.');
+                                console.log('- Cannot add word, no longer in a game.', currentGame.isInGame());
                                 return reply(ERRORS.GAME_NOT_STARTED, true);
                             }
 
@@ -182,7 +182,7 @@ module.exports = (app, expWs) => {
                                 });
                             }
 
-                            console.log('Sending Game Key');
+                            console.log('Sending Game Key', currentGame.state);
 
                             return reply({
                                 success: true,

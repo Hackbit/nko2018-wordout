@@ -42,7 +42,7 @@
                 </table>
             </div>
 
-            <ui-button :isDisabled="!canRematch" @click="startGame()">Re-match <timer v-if="canRematch" :time="30"><span slot-scope="{ timeLeft }">Disabled in {{timeLeft}}</span></timer></ui-button>
+            <ui-button :isDisabled="!canRematch || waitingRematch" @click="rematch()">Re-match <timer v-if="canRematch" :time="30"><span slot-scope="{ timeLeft }">Waiting for {{timeLeft}}</span></timer></ui-button>
             <ui-button to="/">Main Menu</ui-button>
         </box>
 
@@ -61,7 +61,7 @@
             <br />
             <ui-input :value="(hostKey || '').toUpperCase()" disabled placeholder="CREATE GAME FOR KEY" />
 
-            <ui-button  :isDisabled="!!hostKey"  @click="startGame()">{{ hostKey ? 'WAITING FOR PARTNER' : 'CREATE GAME' }}</ui-button>
+            <ui-button :isDisabled="!!hostKey"  @click="startGame()">{{ hostKey ? 'WAITING FOR PARTNER' : 'CREATE GAME' }}</ui-button>
         </box>
 
         <div v-if="isInGame">
@@ -177,6 +177,10 @@ table {
         public canRematch: boolean = true;
         private disposers: Function[] = [];
 
+        private knownKey: string = '';
+        private rematchTimer: any = null;
+        private waitingRematch: boolean = true;
+
         get wpm(): number {
             return Math.round(this.words.length / (this.time / 60));
         }
@@ -204,16 +208,33 @@ table {
             return false;
         }
 
+        public rematch() {
+            this.waitingRematch = true;
+            api.startGame(GameType.MULTI, this.time, this.knownKey);
+
+            const timer = setTimeout(() => {
+                api.leave();
+            }, 30000);
+            this.rematchTimer = timer;
+            this.disposers.push(() => clearTimeout(timer));
+        }
+
         public startGame(key: string|null = null) {
+            console.log('The key is ', key, typeof key, this.isJoinKeySameAsHost);
             if (key === "" || (key === null && this.hostKey) || (key && this.isJoinKeySameAsHost)) {
                 return;
             }
 
+            this.knownKey = key || '';
+
             api.startGame(GameType.MULTI, this.time, key || null).then((resp) => {
+                console.log('Game Started', resp);
                  this.hostKey = resp.key;
+                 this.knownKey = resp.key;
             });
 
             this.disposers.push(api.onGameStart(({ letter, count }) => {
+                clearTimeout(this.rematchTimer);
                 this.isInGame = true;
                 this.letter = letter.toUpperCase();
                 this.count = count;
