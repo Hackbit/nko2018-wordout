@@ -5,7 +5,6 @@
           <ui-button to="/game/single-player">SINGLE PLAYER</ui-button>
           <ui-button to="/game/two-player">2 PLAYER</ui-button>
           <ui-button to="/game/global">GLOBAL CHALLENGE</ui-button>
-          <ui-button>ACHIEVEMENTS</ui-button>
       </div>
   </div>
 </template>
