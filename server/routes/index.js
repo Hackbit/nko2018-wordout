@@ -100,6 +100,7 @@ module.exports = (app, expWs) => {
                             const word = {
                                 ...currentGame.addWord(data.payload, ws),
                                 word: dictionary.sanitize(data.payload),
+                                points: currentGame.getPoints(),
                             };
 
                             console.log('Broadcasting word...');
