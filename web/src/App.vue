@@ -103,15 +103,14 @@
         font-size: 8px;
     }
 
-    html {
-        font-family: Helvetica, Arial, sans-serif;
-    }
-
     #app {
         width: 100vw;
         height: 100vh;
         background: $primary;
         background: radial-gradient(ellipse at center, #{$primary} 0%,#{lighten($primary, 10%)} 100%);
+
+        font-family: 'Josefin Sans', sans-serif;
+
     }
 
     h5 {

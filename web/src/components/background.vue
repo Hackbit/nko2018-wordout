@@ -111,6 +111,12 @@
             }
 
             this.update();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+
             document.addEventListener('visibilitychange', () => {
                 console.log('Lost Focus - ', document.hidden);
                 this.isAnimating = !document.hidden;
