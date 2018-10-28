@@ -186,6 +186,7 @@ table {
 
             const item: IWord = {
                 word,
+                isCommon: null,
                 isDuplicated: false,
                 isValid: null,
                 points: 0,
@@ -194,6 +195,7 @@ table {
 
             api.submitWord(word).then((resp) => {
                 this.points = resp.points;
+                item.isCommon = resp.isCommon;
                 item.isDuplicated = resp.isDuplicated;
                 item.isValid = resp.isValid;
                 item.points = resp.wordPoints;
