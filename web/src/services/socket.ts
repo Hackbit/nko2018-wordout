@@ -38,7 +38,7 @@ export class Socket {
                 this.connecting = false;
                 this.setConnected(false);
                 this.socket = undefined;
-                this.connect();
+                setTimeout(() => this.connect(), 500);
             });
 
             this.socket.addEventListener('close', (ev) => {
@@ -49,7 +49,7 @@ export class Socket {
                     this.connecting = false;
                     this.setConnected(false);
                     this.socket = undefined;
-                    this.connect();
+                    setTimeout(() => this.connect(), 500);
                 }
             });
 

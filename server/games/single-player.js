@@ -41,6 +41,11 @@ class SinglePlayerGame extends EventEmitter {
         this.state.player = ws;
     }
 
+
+    removePlayer(ws) {
+        // No cleanup required...
+    }
+
     start(time = 60) {
         if (this.isInGame()) {
             return false;
@@ -72,6 +77,15 @@ class SinglePlayerGame extends EventEmitter {
 
     getTotalWordCountForLetter() {
         return dictionary.count(this.getLetter());
+    }
+
+    shouldBroadcastStart() {
+        return true;
+    }
+
+
+    getTime() {
+        return this.state.time;
     }
 
     reset() {
@@ -108,6 +122,7 @@ class SinglePlayerGame extends EventEmitter {
             letter: '',
             points: 0,
             player: null,
+            time: 60,
         };
     }
 }

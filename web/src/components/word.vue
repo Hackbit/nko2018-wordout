@@ -117,10 +117,6 @@
                 animation: alternate bounce 1s infinite ease-in-out;
             }
         }
-
-        &--rainbow {
-            .tile:nth-child(1) { }
-        }
     }
 
     .tile {

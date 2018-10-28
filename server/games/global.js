@@ -8,10 +8,9 @@ const Events = {
 };
 
 class Player {
-    constructor(isHost, ws) {
+    constructor(ws) {
         this.ws = ws;
         this.points = 0;
-        this.isHost = isHost;
         this.name = "Player";
     }
 
@@ -24,16 +23,18 @@ class Player {
 
 const Games = new Map();
 
-class TwoPlayerGame extends EventEmitter {
+class GlobalChallenge extends EventEmitter {
     constructor() {
         super();
         this.state = this.getInitialState();
+        this.state.points = this.getTotalWordCountForLetter();
     }
 
     addWord(word, ws) {
         const player = this.getPlayerFromWs(ws);
 
-        if (!this.isInGame() || !player) {
+        if (!player) {
+            console.log('Cant find that user. They must bere here though for that reference...');
             return false;
         }
 
@@ -47,6 +48,7 @@ class TwoPlayerGame extends EventEmitter {
             pointCount = sanitized.length + (isCommon ? 0 : 10);
             this.state.words.add(sanitized);
             player.points += pointCount;
+            this.state.points--;
         }
 
         return {
@@ -57,21 +59,11 @@ class TwoPlayerGame extends EventEmitter {
         };
     }
 
-    start(time = 60) {
-        if (this.isInGame()) {
-            return false;
-        }
-
-        this.reset();
-        this.state.letter = randomLetter();
-        this.state.isInGame = true;
-
-        if (time !== 0 && time > 0) {
-            this.timer = setTimeout(() => {
-                this.state.isInGame = false;
-                this.emit(Events.END);
-            }, time * 1000);
-        }
+    start(ws) {
+        ws.on('close', () => {
+            console.log('REMOVING PLAYER');
+            this.removePlayer(ws);
+        });
     }
 
     getPlayerFromWs(ws) {
@@ -86,35 +78,7 @@ class TwoPlayerGame extends EventEmitter {
         return this.getPlayerFromWs(ws);
     }
 
-    addPlayer(ws, joinKey) {
-        const players = this.getPlayers().length;
-
-        if (!this.isInGame() && players >= 2) {
-            throw 'ERORR_IN_PLAY';
-        }
-
-        if (players === 0 && joinKey === null) {
-            this.setJoinKey();
-        }
-
-        const player = new Player(ws, this.state.players.length === 0);
-        this.state.players.push(player);
-
-        ws.on('close', () => {
-            console.log('REMOVING GAME');
-            this.removePlayer(ws);
-            this.emit(Events.END);
-            Games.delete(this.getJoinKey());
-        });
-
-        return player;
-    }
-
     removePlayer(ws) {
-        if (this.timer) {
-            clearTimeout(this.timer);
-        }
-
         const playerIndex = this.state.players.indexOf(this.getPlayerFromWs(ws));
 
         if (playerIndex !== -1) {
@@ -122,34 +86,34 @@ class TwoPlayerGame extends EventEmitter {
         }
     }
 
+    addPlayer(ws) {
+        console.log('Adding player to global game', !!ws);
+        const player = new Player(ws);
+        this.state.players.push(player);
 
-    getTime() {
-        return this.state.time;
+        return player;
     }
 
     getLetter() {
         return this.state.letter;
     }
 
-    getPoints() {
-        return this.state.players.map((player) => {
-            return ({
-                isHost: player.isHost,
-                points: player.points,
-            });
-        });
-    }
-
     getPlayers() {
         return this.state.players;
     }
 
-    getJoinKey() {
-        return this.state.joinKey;
+    getTime() {
+
+        const DAY = 60 * 60 * 24 * 1000;
+        return Math.round((DAY - (Date.now() % DAY)) / 1000);
     }
 
     isInGame() {
-        return this.state.isInGame;
+        return false;
+    }
+
+    getPoints() {
+        return this.state.points;
     }
 
     getTotalWordCountForLetter() {
@@ -159,31 +123,21 @@ class TwoPlayerGame extends EventEmitter {
     reset() {
         this.state = {
             ...this.getInitialState(),
-            joinKey: this.state.joinKey,
             players: this.state.players,
         };
 
+        this.state.points = this.getTotalWordCountForLetter();
         this.getPlayers().forEach((player) => {
             player.points = 0;
         });
     }
 
-    shouldBroadcastStart() {
-        return true;
-    }
-
-    setJoinKey() {
-        let key = dictionary.getRandomWord();
-        while (key.length > 10) {
-            key = dictionary.getRandomWord();
-        }
-
-        this.state.joinKey = key;
-        Games.set(key.toUpperCase(), this);
-    }
-
     onGameEnd(handler) {
         return this.on(Events.END, handler);
+    }
+
+    shouldBroadcastStart() {
+        return false;
     }
 
     broadcast(ws, data) {
@@ -204,24 +158,21 @@ class TwoPlayerGame extends EventEmitter {
     }
 
     isReady() {
-        return this.getPlayers().length === 2 && !this.isInGame();
+        return true;
     }
 
     getInitialState() {
         return {
-            isInGame: false,
-            joinKey: null,
             words: new Set(),
-            isInProgress: false,
-            letter: '',
+            letter: randomLetter(),
+            points: 0,
             players: [
             ],
-            time: 60,
         };
     }
 }
 
 module.exports = {
-    TwoPlayerGame,
+    GlobalChallenge,
     Games
 };

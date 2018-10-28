@@ -3,6 +3,7 @@ const router = express.Router();
 
 const { dictionary } = require('../services/dictionary');
 const { SinglePlayerGame } = require('../games/single-player');
+const { GlobalChallenge } = require('../games/global');
 const { TwoPlayerGame, Games } = require('../games/two-player');
 
 
@@ -12,11 +13,13 @@ const ERRORS = {
     INVALID_KEY: 'INVALID_JOIN_KEY',
 };
 
+const DAY = 60 * 60 * 24 * 1000;
+
 module.exports = (app, expWs) => {
 
     const wss = expWs.getWss();
 
-    const interval = setInterval(function ping() {
+    setInterval(function ping() {
         wss.clients.forEach(function each(ws) {
           if (ws.isAlive === false) return ws.terminate();
 
@@ -25,6 +28,20 @@ module.exports = (app, expWs) => {
           ws.ping();
         });
     }, 10000);
+
+    let globalChallenge = new GlobalChallenge();
+    setTimeout(function resetGlobal () {
+        globalChallenge.reset();
+        globalChallenge.broadcast({
+            type: 'game-start',
+            payload: {
+                letter: globalChallenge.getLetter(),
+                count: globalChallenge.getTotalWordCountForLetter(),
+                endsIn: globalChallenge.getTime(),
+            }
+        });
+        setTimeout(resetGlobal, DAY);
+    }, globalChallenge.getTime());
 
     app.ws('/ws', (ws) => {
 
@@ -69,8 +86,13 @@ module.exports = (app, expWs) => {
                             return reply({
                                 isWord: dictionary.isWord(data.payload),
                             });
+                        case 'leave':
+                            if (currentGame) {
+                                currentGame.removePlayer(ws);
+                            }
+                            return reply(true);
                         case 'add':
-                            if (!currentGame || !currentGame.isInGame()) {
+                            if ((!currentGame || !currentGame.isInGame()) && currentGame !== globalChallenge) {
                                 console.log('- Cannot add word, no longer in a game.');
                                 return reply(ERRORS.GAME_NOT_STARTED, true);
                             }
@@ -90,7 +112,11 @@ module.exports = (app, expWs) => {
                             console.log(`- Adding word "${data.payload}".`);
                             return reply(word);
                         case 'start':
-                            currentGame = null;
+                            if (currentGame) {
+                                currentGame.removePlayer(ws);
+                                currentGame = null;
+                            }
+                            let isGlobal = false;
                             if (!currentGame && data.payload.type) {
                                 switch (data.payload.type) {
                                     case "SINGLE_PLAYER":
@@ -109,6 +135,10 @@ module.exports = (app, expWs) => {
                                             currentGame = new TwoPlayerGame();
                                         }
                                         break;
+                                    case "GLOBAL":
+                                        currentGame = globalChallenge;
+                                        isGlobal = true;
+                                        break;
                                 }
                             }
                             if (!currentGame || currentGame.isInGame()) {
@@ -121,7 +151,8 @@ module.exports = (app, expWs) => {
                             const isReady = currentGame.isReady();
 
                             if (isReady) {
-                                currentGame.start(data.payload.time || 60);
+                                const time = data.payload.time || currentGame.getTime();
+                                currentGame.start(isGlobal ? ws : time);
 
                                 currentGame.onGameEnd(() => {
                                     console.log('- Game has ended.');
@@ -131,18 +162,21 @@ module.exports = (app, expWs) => {
                                     });
                                 });
 
-
-                                currentGame.broadcast(ws, {
-                                    type: 'game-start',
-                                    payload: {
-                                        letter: currentGame.getLetter(),
-                                        count: currentGame.getTotalWordCountForLetter(),
-                                    }
-                                });
+                                if (currentGame.shouldBroadcastStart()) {
+                                    currentGame.broadcast(ws, {
+                                        type: 'game-start',
+                                        payload: {
+                                            letter: currentGame.getLetter(),
+                                            count: currentGame.getTotalWordCountForLetter(),
+                                            endsIn: time
+                                        }
+                                    });
+                                }
 
                                 return reply({
                                     letter: currentGame.getLetter(),
                                     count: currentGame.getTotalWordCountForLetter(),
+                                    endsIn: time,
                                 });
                             }
 

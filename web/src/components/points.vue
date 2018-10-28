@@ -1,6 +1,6 @@
 <template>
     <div class="points">
-        <div class="title">POINTS</div>
+        <div class="title">{{ label || 'POINTS' }}</div>
         <div class="amount">{{points}}</div>
     </div>
 </template>
@@ -14,6 +14,9 @@
     export default class Points extends Vue {
         @Prop(Number)
         private points!: number;
+
+        @Prop(String)
+        private label!: string;
     }
 </script>
 

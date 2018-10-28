@@ -1,53 +1,18 @@
 <template>
     <div class="home">
-        <box v-if="hasEnded">
-            <div>
-                <div class="total-description">TOTAL POINTS</div>
-                <word class="total" :word="points.toString()" />
+        <box v-if="!isInGame">
+            <h5>JOIN GLOBAL CHALLENGE</h5>
 
-                <!-- Feel like I haven't written a table in years -->
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Words</th>
-                            <td>{{validWords}}</td>
-                        </tr>
+            <p>
+                The global challenge gives everyone one letter to begin with. The game is reset daily. The game is won by every single word starting with a particular letter being entered.
+            </p>
 
-                        <tr>
-                            <th>WPM</th>
-                            <td>{{wpm}}</td>
-                        </tr>
-
-                        <tr>
-                            <th>Common Words</th>
-                            <td>{{commonWords}}</td>
-                        </tr>
-
-                        <tr v-if="bestWord">
-                            <th>Best Word</th>
-                            <td>{{bestWord.word}} (+{{bestWord.points}})</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <ui-button @click="startGame()">Play Again</ui-button>
-            <ui-button to="/">Main Menu</ui-button>
-        </box>
-
-        <box v-if="!isInGame && !hasEnded">
-            <h5>How to play</h5>
-            <p>Click the start game button and look for the letter at the top of the screen. Type words (and submit with enter) that begin with that letter. Once the times up it's over!</p>
-            <p>Earn points based on the longer the word and how common it is</p>
-            <h5>Settings</h5>
-            <label>Game Duration (seconds)</label>
-            <ui-input :value="time || 60" type="number" @input="time = +$event" />
-            <ui-button @click="startGame()">Start Game</ui-button>
+            <ui-button @click="startGame()">JOIN GAME</ui-button>
         </box>
 
         <div v-if="isInGame">
             <div class="stats">
-                <points :points="points" />
+                <points :points="points" label="WORDS LEFT" />
                 <div class="letter"><word :word="letter" /></div>
                 <timer :time="time" ref="timer" />
             </div>
@@ -77,6 +42,7 @@ label {
     font-weight: bold;
 }
 
+
 .total, .total-description {
     width: 60%;
     margin-left: auto;
@@ -86,6 +52,7 @@ label {
 .total-description {
     width: 100%;
 }
+
 table {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -102,14 +69,14 @@ table {
 }
  .total-description{
      text-align: center;
-     font-size: 30px;
+     font-size: 24px;
  }
 </style>
 
 
 <script lang="ts">
     import { Component, Vue, Watch } from 'vue-property-decorator';
-    import { api, GameType } from '../../services/api';
+    import { api, GameType, IAddResponse, IStartResponse } from '../../services/api';
 
     import { IWord } from '../../utils/word.types';
     import Points from '../../components/points.vue';
@@ -133,16 +100,14 @@ table {
             UiInput,
         }
     })
-    export default class SinglePlayerGame extends Vue {
+    export default class GlobalChallenge extends Vue {
         public time: number = 60;
         public words: IWord[] = [];
         public isInGame: boolean = false;
-        public hasEnded: boolean = false;
 
         public points: number = 0;
         public letter: string = "";
         public count: number = 0;
-        public timeLeft: number = 0;
 
         private disposers: Function[] = [];
 
@@ -165,24 +130,40 @@ table {
             return this.words.filter((word) => word.isCommon && word.isValid).length;
         }
 
-        public startGame() {
-            api.startGame(GameType.SINGLE, this.time).then(({ letter, count, endsIn }) => {
-                this.isInGame = true;
-                this.letter = letter.toUpperCase();
-                this.count = count;
-                this.timeLeft = this.time;
+        public onGameStart({ letter, count, endsIn }: IStartResponse) {
+            this.isInGame = true;
+            this.letter = letter.toUpperCase();
+            this.count = count;
+            this.time = endsIn;
 
-                this.points = 0;
-                this.words = [];
-                this.hasEnded = false;
-            });
+            this.points = count;
+            this.words = [];
+        }
+
+
+        public startGame() {
+            api.startGame(GameType.GLOBAL, 0).then((res) => this.onGameStart(res));
+
+            this.disposers.push(api.onGameStart((res) => this.onGameStart(res)));
+
+            this.disposers.push(api.onWordAdded((word) => {
+                this.words.push({
+                    word: word.word,
+                    isCommon: word.isCommon,
+                    isDuplicated: word.isDuplicated,
+                    isValid: word.isValid,
+                    points: word.wordPoints,
+                    isMe: word.isMe,
+                });
+
+                // TODO: Eventually fix this awful typings.
+                this.points = word.points as number;
+            }));
 
             this.disposers.push(api.onGameEnd(() => {
                 this.isInGame = false;
-                this.hasEnded = true;
             }));
         }
-
 
         public destroyed() {
             this.disposers.forEach((fn) => fn());
@@ -194,23 +175,7 @@ table {
                 return;
             }
 
-            const item: IWord = {
-                word,
-                isCommon: null,
-                isDuplicated: false,
-                isValid: null,
-                points: 0,
-                isMe: true,
-            };
-            this.words.push(item);
-
-            api.submitWord(word).then((resp) => {
-                this.points = resp.points as number;
-                item.isCommon = resp.isCommon;
-                item.isDuplicated = resp.isDuplicated;
-                item.isValid = resp.isValid;
-                item.points = resp.wordPoints;
-            });
+            api.submitWord(word);
         }
     }
 </script>

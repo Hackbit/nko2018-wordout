@@ -168,6 +168,7 @@ table {
         public joinKey: string = '';
 
         public canRematch: boolean = true;
+        private disposers: Function[] = [];
 
         get wpm(): number {
             return Math.round(this.words.length / (this.time / 60));
@@ -204,7 +205,7 @@ table {
                  this.hostKey = resp.key;
             });
 
-            api.onGameStart(({ letter, count }) => {
+            this.disposers.push(api.onGameStart(({ letter, count }) => {
                 this.isInGame = true;
                 this.letter = letter.toUpperCase();
                 this.count = count;
@@ -215,9 +216,9 @@ table {
                 this.hasEnded = false;
 
                 this.isHost = !key;
-            });
+            }));
 
-            api.onWordAdded((word) => {
+            this.disposers.push(api.onWordAdded((word) => {
                 this.words.push({
                     word: word.word,
                     isCommon: word.isCommon,
@@ -229,15 +230,20 @@ table {
 
                 // TODO: Eventually fix this awful typings.
                 this.setPoints(word.points as any);
-            });
+            }));
 
-            api.onGameEnd(() => {
+            this.disposers.push(api.onGameEnd(() => {
                 this.isInGame = false;
                 this.hasEnded = true;
                 this.canRematch = true;
 
                 setTimeout(() => this.canRematch = false, 30000);
-            });
+            }));
+        }
+
+        public destroyed() {
+            this.disposers.forEach((fn) => fn());
+            api.leave();
         }
 
         public setPoints(players: Array<{ isHost: boolean, points: number }>) {

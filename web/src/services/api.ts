@@ -13,6 +13,7 @@ export interface IAddResponse {
 export interface IStartResponse {
     letter: string;
     count: number;
+    endsIn: number;
 }
 
 export interface IStartResponse {
@@ -42,6 +43,10 @@ export class Api {
         return (await socket.call('is-word', word)).isWord;
     }
 
+    public async leave(): Promise<void> {
+        await socket.call('leave');
+    }
+
     public async submitWord(word: string): Promise<IAddResponse> {
         return await socket.call('add', word) as IAddResponse;
     }
@@ -56,7 +61,7 @@ export class Api {
         }) as IStartResponse;
     }
 
-    public async onGameStart(handler: (data: IStartResponse) => void) {
+    public onGameStart(handler: (data: IStartResponse) => void) {
         return socket.addHandler('game-start', handler);
     }
 

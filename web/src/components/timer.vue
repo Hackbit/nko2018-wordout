@@ -3,14 +3,14 @@
         <slot :timeLeft="timeLeft">
             <div class="timer">
                 <div class="title">TIME</div>
-                <div class="amount">{{timeLeft}}</div>
+                <div class="amount">{{formattedTime}}</div>
             </div>
         </slot>
     </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 
 @Component
 export default class Timer extends Vue {
@@ -19,6 +19,22 @@ export default class Timer extends Vue {
 
     @Prop(Number)
     public time!: number;
+
+    get formattedTime(): string {
+        if (this.timeLeft < 60) {
+            return `${this.timeLeft}s`;
+        }
+
+        let tempTime = this.timeLeft;
+
+        const hours = Math.floor(tempTime / 3600);
+        tempTime = tempTime % 3600;
+
+        const minutes = Math.floor(tempTime / 60);
+        tempTime = tempTime % 60;
+
+        return `${hours ? `${hours}h `: ''}${minutes||0}m ${tempTime||0}s`;
+    }
 
 
     public updateTimer() {
