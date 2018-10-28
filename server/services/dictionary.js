@@ -22,13 +22,21 @@ class Dictionary {
             console.log('Loading', this.getDictionaryLocation(dictionary));
             const data = require(this.getDictionaryLocation(dictionary));
             const words = Object.keys(data);
+            let count = 0;
 
-            this.letterCount[this.sanitize(words[0]).substr(0, 1)] = words.length;
             for (const word of words) {
                 const definition = data[word];
+
+                if (this.ignoreWord(word)) {
+                    continue;
+                }
+
                 this.words.set(this.sanitize(word), definition);
                 this.wordList.push(this.sanitize(word));
+                count++;
             }
+
+            this.letterCount[this.sanitize(words[0]).substr(0, 1)] = count;
         }
         this.loaded = true;
     }
@@ -91,8 +99,12 @@ class Dictionary {
         return this.words.has(this.sanitize(word));
     }
 
+    ignoreWord(word) {
+        return word.indexOf(' ') !== -1;
+    }
+
     sanitize(word) {
-        return (word || '').toLocaleLowerCase().trim();
+        return (word || '').toLocaleLowerCase().trim().replace(/[\'`\$,\.\\\/]/gi, '');
     }
 
     isCommon(word) {

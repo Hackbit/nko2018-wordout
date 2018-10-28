@@ -52,7 +52,7 @@
                     return position;
                 }
 
-                if (tries > 10000) {
+                if (tries > 1000) {
                     // Bail.
                     console.log('Bailing');
                     return position;
@@ -101,7 +101,7 @@
             this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
             this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 50; i++) {
                 const { x, y } = this.randomPosition();
                 this.letters.push({
                     letter: this.randomLetter(),

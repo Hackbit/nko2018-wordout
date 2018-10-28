@@ -4,6 +4,7 @@ export interface IAddResponse {
     isDuplicated: boolean;
     isValid: boolean;
     points: number;
+    wordPoints: number;
 }
 
 export interface IStartResponse {

@@ -21,16 +21,19 @@ class SinglePlayerGame extends EventEmitter {
         const isValid = dictionary.isWord(sanitized) && sanitized.startsWith(this.getLetter());
         const isCommon = dictionary.isCommon(sanitized);
         const isDuplicated = this.state.words.has(sanitized);
+        let pointCount = 0;
 
         if (isValid && !isDuplicated) {
+            pointCount = sanitized.length + (isCommon ? 0 : 10);
             this.state.words.add(sanitized);
-            this.state.points += isCommon ? 5 : 10;
+            this.state.points += pointCount;
         }
 
         return {
             isValid,
             isCommon,
             isDuplicated,
+            wordPoints: pointCount,
         };
     }
 

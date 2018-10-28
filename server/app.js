@@ -12,14 +12,14 @@ dictionary.load().then(() => {
     const fileLoc = path.join(__dirname, '../web/dist');
     const app = express();
 
-    expressWs(app);
+    const ws = expressWs(app);
     app.use(logger('dev'));
     app.use(express.json());
     app.use(express.urlencoded({extended: false}));
     app.use(cookieParser());
     app.use(express.static(fileLoc));
 
-    app.use('/', indexRouter(app));
+    app.use('/', indexRouter(app, ws));
 
     // catch 404 and forward to error handler
 
@@ -28,7 +28,7 @@ dictionary.load().then(() => {
         res.sendFile(`${fileLoc}/index.html`);
     });
 
-    app.listen(80, () => {
+    app.listen(parseInt(process.env.PORT) || 80, () => {
         console.log('App Started');
     });
 });

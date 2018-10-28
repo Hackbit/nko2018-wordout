@@ -9,18 +9,49 @@ const ERRORS = {
     GAME_ALREADY_STARTED: 'GAME_ALREADY_STARTED',
 };
 
-module.exports = (app) => {
+module.exports = (app, expWs) => {
+
+    const wss = expWs.getWss();
+
+    function heartbeat() {
+      this.isAlive = true;
+    }
+
+    wss.on('connection', function connection(ws) {
+      ws.isAlive = true;
+      ws.on('pong', heartbeat);
+    });
+
+    setInterval(function ping() {
+      wss.clients.forEach(function each(ws) {
+        if (ws.isAlive === false) return ws.terminate();
+
+        ws.isAlive = false;
+        ws.ping(() => {});
+      });
+    }, 3000);
+
     app.ws('/ws', (ws) => {
+
         const game = new SinglePlayerGame();
         ws.on('message', (message) => {
             try {
                 const data = JSON.parse(message);
                 console.log('> RECEIVED: ', message);
                 const send = (payload) => {
-                    const jsonData = JSON.stringify(payload);
-                    console.log('< SENDING: ', jsonData);
-                    ws.send(jsonData);
+                    if (!ws.isAlive) {
+                        return;
+                    }
+
+                    try {
+                        const jsonData = JSON.stringify(payload);
+                        console.log('< SENDING: ', jsonData);
+                        ws.send(jsonData);
+                    } catch (e) {
+                        console.error('< ERROR: ', e);
+                    }
                 };
+
                 const reply = (payload, error = false) => {
                     send({
                         id: data.id,

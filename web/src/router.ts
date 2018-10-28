@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Start from './views/start.vue';
+import SinglePlayerGame from './views/gameplay/single-player.vue';
 
 Vue.use(Router);
 
@@ -14,9 +15,9 @@ export default new Router({
       component: Start,
     },
     {
-      path: '/game',
-      name: 'game',
-      component: () => import(/* webpackChunkName: "about" */ './views/in-game.vue'),
+      path: '/game/single-player',
+      name: 'single-player',
+      component: SinglePlayerGame,
     },
   ],
 });

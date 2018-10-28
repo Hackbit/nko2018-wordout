@@ -3,9 +3,6 @@
 
         <background></background>
         <div class="page">
-            <div id="nav">
-                <word class="title" word="Wordout"></word>
-            </div>
             <router-view/>
         </div>
     </div>
@@ -15,12 +12,10 @@
     import { Component, Vue } from 'vue-property-decorator';
 
     import Background from './components/background.vue';
-    import Word from './components/word.vue';
 
     @Component({
         components: {
             Background,
-            Word
         }
     })
     export default class AppComponent extends Vue {
@@ -29,13 +24,25 @@
 
 <style lang="scss">
     @import "./css/_variables.scss";
+    @import "./css/_reset.scss";
+
     html {
         background: $primary;
         font-family: Helvetica, Arial, sans-serif;
     }
 
-    .title {
-        margin-top: 55px;
+    h5 {
+        font-weight: bold;
+        font-size: 20px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 40px;
+        margin-top: 15px;
+        margin-bottom: 10px;
     }
 
     .page {
@@ -44,5 +51,9 @@
         left: 0;
         top: 0;
         position: absolute;
+    }
+
+    *, *:before, *:after {
+        box-sizing: border-box;
     }
 </style>
