@@ -2,6 +2,7 @@ import { Howler, Howl } from 'howler';
 
 class Sound {
     public sounds: Map<string, Howl> = new Map();
+    public isMuted: boolean = false;
 
     public addSound(name: string, isLoop: boolean = false, immediate: boolean = false, volume: number = 1) {
         console.log('Adding...', `/sounds/${name}.ogg`);
@@ -23,8 +24,9 @@ class Sound {
         this.sounds.set(name, sound);
     }
 
-    public setMute(isMuted: boolean) {
-        Howler.mute(isMuted);
+    public toggleMute() {
+        this.isMuted = !this.isMuted;
+        Howler.mute(this.isMuted);
     }
 
     public play(name: string) {

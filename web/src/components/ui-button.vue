@@ -1,9 +1,9 @@
 <template>
     <div @click="click()">
-        <router-link v-if="$attrs.to" :to="$attrs.to" :class="['button', { 'button--disabled': isDisabled }]">
+        <router-link v-if="$attrs.to" :to="$attrs.to" :class="['button', buttonClass, { 'button--disabled': isDisabled }]">
             <slot></slot>
         </router-link>
-        <button v-if="!$attrs.to" :class="['button', { 'button--disabled': isDisabled }]"><slot></slot></button>
+        <button v-if="!$attrs.to" :class="['button', buttonClass, { 'button--disabled': isDisabled }]"><slot></slot></button>
     </div>
 </template>
 
@@ -17,6 +17,10 @@
     export default class UiButton extends Vue {
         @Prop(Boolean)
         public isDisabled!: boolean;
+
+        @Prop(String)
+        public buttonClass!: string;
+
 
         public click() {
             sound.play('click');
@@ -34,7 +38,6 @@
         text-transform: uppercase;
         text-decoration: none;
         width: 100%;
-        color: inherit;
         margin-top: 20px;
         margin-bottom: 15px;
         background: $secondary;

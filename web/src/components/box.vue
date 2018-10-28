@@ -18,6 +18,7 @@
 
 <style lang="scss" scoped>
 .box {
+    margin-top: 10px;
     position: relative;
     left: 50%;
     transform: translateX(-50%);
