@@ -24,7 +24,7 @@ module.exports = (app, expWs) => {
           console.log('<> PING');
           ws.ping();
         });
-    }, 5000);
+    }, 10000);
 
     app.ws('/ws', (ws) => {
 
@@ -90,13 +90,13 @@ module.exports = (app, expWs) => {
                             console.log(`- Adding word "${data.payload}".`);
                             return reply(word);
                         case 'start':
+                            currentGame = null;
                             if (!currentGame && data.payload.type) {
                                 switch (data.payload.type) {
                                     case "SINGLE_PLAYER":
                                         currentGame = new SinglePlayerGame();
                                         break;
                                     case "TWO_PLAYER":
-                                        console.log('TWO PLAYER GOING');
                                         if (data.payload.key && typeof data.payload.key === "string") {
                                             const key = data.payload.key.toUpperCase();
                                             if (!Games.has(key)) {

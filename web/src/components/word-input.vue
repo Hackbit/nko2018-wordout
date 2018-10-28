@@ -60,7 +60,9 @@
 
 <style lang="scss" scoped>
     .hidden {
-        // width: 0;
-        // overflow: hidden;
+        position: fixed;
+        transform: translate(-100%, -100%);
+        left: -100%;
+        top: -100%;
     }
 </style>

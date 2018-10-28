@@ -8,7 +8,7 @@
                     'word': true,
                     'word--valid': iword.isValid,
                     'word--duplicate': iword.isDuplicated,
-                    'word--invalid': !iword.isValid,
+                    'word--invalid': !iword.isValid && iword.isValid !== null,
                 }">
                 <span>{{iword.word}} ({{ iword.isDuplicated ? 'dupe' : `+${iword.points}` }})</span>
             </li>
