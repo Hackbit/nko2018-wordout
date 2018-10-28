@@ -1,12 +1,15 @@
 {
-	"folders": [
-		{
+    "folders": [
+        {
             "name": "Web",
-			"path": "./web"
+            "path": "./web"
         },
         {
             "name": "Server",
             "path": "./server"
+        },
+        {
+            "path": "."
         }
     ],
     "settings": {}
