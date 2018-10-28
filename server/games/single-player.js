@@ -37,12 +37,16 @@ class SinglePlayerGame extends EventEmitter {
         };
     }
 
+    addPlayer(ws) {
+        this.state.player = ws;
+    }
+
     start(time = 60) {
         if (this.isInGame()) {
             return false;
         }
 
-        this.state = this.getInitialState();
+        this.reset();
         this.state.letter = randomLetter();
         this.state.isInGame = true;
 
@@ -66,20 +70,34 @@ class SinglePlayerGame extends EventEmitter {
         return this.state.isInGame;
     }
 
-    getWordCount() {
-        return this.state.words.length;
-    }
-
     getTotalWordCountForLetter() {
         return dictionary.count(this.getLetter());
     }
 
     reset() {
-        this.state = this.getInitialState();
+        this.state = {
+            ...this.getInitialState(),
+            player: this.state.player,
+        };
     }
 
     onGameEnd(handler) {
         return this.on(Events.END, handler);
+    }
+
+    isReady() {
+        return !this.isInGame();
+    }
+
+    broadcast(ws, payload) {
+        if (this.state.player) {
+            try {
+                console.error('< SENDING: ', JSON.stringify(payload));
+                this.state.player.send(JSON.stringify(payload));
+            } catch (e) {
+                console.error('< ERROR: ', e);
+            }
+        }
     }
 
     getInitialState() {
@@ -89,6 +107,7 @@ class SinglePlayerGame extends EventEmitter {
             isInProgress: false,
             letter: '',
             points: 0,
+            player: null,
         };
     }
 }

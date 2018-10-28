@@ -3,37 +3,39 @@ const router = express.Router();
 
 const { dictionary } = require('../services/dictionary');
 const { SinglePlayerGame } = require('../games/single-player');
+const { TwoPlayerGame, Games } = require('../games/two-player');
+
 
 const ERRORS = {
     GAME_NOT_STARTED: 'GAME_NOT_STARTED',
     GAME_ALREADY_STARTED: 'GAME_ALREADY_STARTED',
+    INVALID_KEY: 'INVALID_JOIN_KEY',
 };
 
 module.exports = (app, expWs) => {
 
     const wss = expWs.getWss();
 
-    function heartbeat() {
-      this.isAlive = true;
-    }
+    const interval = setInterval(function ping() {
+        wss.clients.forEach(function each(ws) {
+          if (ws.isAlive === false) return ws.terminate();
 
-    wss.on('connection', function connection(ws) {
-      ws.isAlive = true;
-      ws.on('pong', heartbeat);
-    });
-
-    setInterval(function ping() {
-      wss.clients.forEach(function each(ws) {
-        if (ws.isAlive === false) return ws.terminate();
-
-        ws.isAlive = false;
-        ws.ping(() => {});
-      });
-    }, 3000);
+          ws.isAlive = false;
+          console.log('<> PING');
+          ws.ping();
+        });
+    }, 5000);
 
     app.ws('/ws', (ws) => {
 
-        const game = new SinglePlayerGame();
+        ws.isAlive = true;
+        ws.on('pong', () => {
+            ws.isAlive = true;
+            console.log('<> PONG');
+        });
+
+        let currentGame = null;
+        console.log('Upgraded Connection');
         ws.on('message', (message) => {
             try {
                 const data = JSON.parse(message);
@@ -68,40 +70,88 @@ module.exports = (app, expWs) => {
                                 isWord: dictionary.isWord(data.payload),
                             });
                         case 'add':
-                            if (!game.isInGame()) {
+                            if (!currentGame || !currentGame.isInGame()) {
                                 console.log('- Cannot add word, no longer in a game.');
                                 return reply(ERRORS.GAME_NOT_STARTED, true);
                             }
 
-                            console.log(`- Adding word "${data.payload}".`);
-                            return reply({
-                                ...game.addWord(data.payload),
-                                points: game.getPoints()
+                            const word = {
+                                ...currentGame.addWord(data.payload, ws),
+                                word: dictionary.sanitize(data.payload),
+                                points: currentGame.getPoints()
+                            };
+
+                            console.log('Broadcasting word...');
+                            currentGame.broadcast(ws, {
+                                type: 'add-word',
+                                payload: word,
                             });
+
+                            console.log(`- Adding word "${data.payload}".`);
+                            return reply(word);
                         case 'start':
-                            if (game.isInGame()) {
+                            if (!currentGame && data.payload.type) {
+                                switch (data.payload.type) {
+                                    case "SINGLE_PLAYER":
+                                        currentGame = new SinglePlayerGame();
+                                        break;
+                                    case "TWO_PLAYER":
+                                        console.log('TWO PLAYER GOING');
+                                        if (data.payload.key && typeof data.payload.key === "string") {
+                                            const key = data.payload.key.toUpperCase();
+                                            if (!Games.has(key)) {
+                                                return reply(ERRORS.INVALID_KEY, true);
+                                            }
+
+                                            currentGame = Games.get(key);
+                                        } else {
+                                            console.log('Created Game');
+                                            currentGame = new TwoPlayerGame();
+                                        }
+                                        break;
+                                }
+                            }
+                            if (!currentGame || currentGame.isInGame()) {
                                 console.log('- Cannot start game, already in game.');
                                 return reply(ERRORS.GAME_ALREADY_STARTED, true);
                             }
 
-                            console.log('- Game Starting.');
-                            game.start(data.payload || 60);
+                            currentGame.addPlayer(ws, data.payload.key);
 
-                            game.onGameEnd(() => {
-                                console.log('- Game has ended.');
-                                send({
-                                    type: 'game-end',
+                            const isReady = currentGame.isReady();
+
+                            if (isReady) {
+                                currentGame.start(data.payload.time || 60);
+
+                                currentGame.onGameEnd(() => {
+                                    console.log('- Game has ended.');
+                                    currentGame.broadcast(ws, {
+                                        type: 'game-end',
+                                        payload: null
+                                    });
+                                });
+
+
+                                currentGame.broadcast(ws, {
+                                    type: 'game-start',
                                     payload: {
-                                        totalPoints: game.getPoints(),
-                                    },
-                                })
-                            });
+                                        letter: currentGame.getLetter(),
+                                        count: currentGame.getTotalWordCountForLetter(),
+                                    }
+                                });
+
+                                return reply({
+                                    letter: currentGame.getLetter(),
+                                    count: currentGame.getTotalWordCountForLetter(),
+                                });
+                            }
+
+                            console.log('Sending Game Key');
 
                             return reply({
-                                letter: game.getLetter(),
-                                count: game.getTotalWordCountForLetter(),
+                                success: true,
+                                key: currentGame.getJoinKey(),
                             });
-
                     }
                 }
             } catch (e) {

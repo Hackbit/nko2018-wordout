@@ -100,7 +100,7 @@ class Dictionary {
     }
 
     ignoreWord(word) {
-        return word.indexOf(' ') !== -1;
+        return word.indexOf(' ') !== -1 || word.indexOf('-') !== -1;
     }
 
     sanitize(word) {

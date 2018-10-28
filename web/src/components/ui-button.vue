@@ -23,6 +23,7 @@
 
     .button {
         text-align: center;
+        text-transform: uppercase;
         text-decoration: none;
         width: 100%;
         color: inherit;

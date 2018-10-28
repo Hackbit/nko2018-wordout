@@ -8,6 +8,7 @@ export class Socket {
     private callHandlers: Map<string, (message: any) => void> = new Map();
     private connected: boolean = false;
     private connecting: boolean = false;
+    private sessionID: string = uuid();
     private connectionPromise: Promise<boolean>|null = null;
 
     public connect() {
@@ -76,6 +77,7 @@ export class Socket {
 
         this.socket!.send(JSON.stringify({
             id,
+            sessionID: this.sessionID,
             endpoint,
             payload,
         }));

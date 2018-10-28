@@ -5,11 +5,13 @@
         <div class="hidden">
             <input
                 autofocus
+                autocomplete="off"
                 ref="input"
                 @blur="$event.target.focus()"
                 @keydown="onKeyDown($event)"
                 @keydown.enter="onChange()"
-                v-model="currentWord"
+                :value="currentWord"
+                @input="currentWord = $event.target.value"
             />
         </div>
     </div>
@@ -44,7 +46,9 @@
         @Emit('change')
         public onChange() {
             const word = this.currentWord;
+            (this.$refs.input as HTMLInputElement).blur();
             this.currentWord = '';
+            (this.$refs.input as HTMLInputElement).focus();
             return word;
         }
 
@@ -56,7 +60,7 @@
 
 <style lang="scss" scoped>
     .hidden {
-        width: 0;
-        overflow: hidden;
+        // width: 0;
+        // overflow: hidden;
     }
 </style>
