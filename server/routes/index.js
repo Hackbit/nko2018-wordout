@@ -100,14 +100,16 @@ module.exports = (app, expWs) => {
                             const word = {
                                 ...currentGame.addWord(data.payload, ws),
                                 word: dictionary.sanitize(data.payload),
-                                points: currentGame.getPoints()
                             };
 
                             console.log('Broadcasting word...');
-                            currentGame.broadcast(ws, {
+                            currentGame.broadcast(ws, (socket) => ({
                                 type: 'add-word',
-                                payload: word,
-                            });
+                                payload: {
+                                    ...word,
+                                    points: currentGame.getPoints(socket),
+                                },
+                            }));
 
                             console.log(`- Adding word "${data.payload}".`);
                             return reply(word);
@@ -163,20 +165,20 @@ module.exports = (app, expWs) => {
                                 });
 
                                 if (currentGame.shouldBroadcastStart()) {
-                                    currentGame.broadcast(ws, {
+                                    currentGame.broadcast(ws, (socket) => ({
                                         type: 'game-start',
                                         payload: {
                                             letter: currentGame.getLetter(),
-                                            points: currentGame.getPoints(),
+                                            points: currentGame.getPoints(socket),
                                             count: currentGame.getTotalWordCountForLetter(),
                                             endsIn: time
                                         }
-                                    });
+                                    }));
                                 }
 
                                 return reply({
                                     letter: currentGame.getLetter(),
-                                    points: currentGame.getPoints(),
+                                    points: currentGame.getPoints(ws),
                                     count: currentGame.getTotalWordCountForLetter(),
                                     endsIn: time,
                                 });

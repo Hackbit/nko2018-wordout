@@ -107,7 +107,9 @@ class SinglePlayerGame extends EventEmitter {
         if (this.state.player) {
             try {
                 console.error('< SENDING: ', JSON.stringify(payload));
-                this.state.player.send(JSON.stringify(payload));
+
+                const newData = typeof payload === 'function' ? payload(this.state.player) : payload;
+                this.state.player.send(JSON.stringify(newData));
             } catch (e) {
                 console.error('< ERROR: ', e);
             }

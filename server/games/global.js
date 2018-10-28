@@ -144,11 +144,13 @@ class GlobalChallenge extends EventEmitter {
         console.log('Broadcasting data to', this.getPlayers().length, 'players');
         this.getPlayers().forEach((player) => {
             try {
-                if (data && data.payload) {
-                    data.payload.isMe = player.ws === ws;
+                const newData = typeof data === 'function' ? data(player.ws) : data;
+
+                if (newData && newData.payload) {
+                    newData.payload.isMe = player.ws === ws;
                 }
 
-                player.send(data);
+                player.send(newData);
             } catch (e) {
                 console.error('< ERROR: ', e);
                 this.state.isInGame = false;

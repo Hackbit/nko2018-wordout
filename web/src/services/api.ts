@@ -4,7 +4,7 @@ export interface IAddResponse {
     isDuplicated: boolean;
     isValid: boolean;
     isCommon: boolean;
-    points: number|Array<{ points: number, isHost: boolean }>;
+    points: number|Array<{ points: number, isHost: boolean, isYou: boolean }>;
     wordPoints: number;
     word: string;
     isMe: boolean;

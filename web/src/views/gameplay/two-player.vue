@@ -230,7 +230,7 @@ table {
             api.startGame(GameType.MULTI, this.time, key || null).then((resp) => {
                 console.log('Game Started', resp);
                  this.hostKey = resp.key;
-                 this.knownKey = resp.key;
+                 this.knownKey = resp.key || this.knownKey;
             });
 
             this.disposers.push(api.onGameStart(({ letter, count }) => {
@@ -279,10 +279,10 @@ table {
             api.leave();
         }
 
-        public setPoints(players: Array<{ isHost: boolean, points: number }>) {
+        public setPoints(players: Array<{ isYou: boolean, points: number }>) {
             // Can you tell there is not long left...
-            const me = players.find(({isHost}) => isHost === this.isHost)!;
-            const them = players.find(({isHost}) => isHost !== this.isHost)!;
+            const me = players.find(({isYou}) => isYou)!;
+            const them = players.find(({isYou}) => !isYou)!;
 
             this.points = me.points;
             this.theirPoints = them.points;

@@ -69,8 +69,7 @@ class TwoPlayerGame extends EventEmitter {
 
         if (time !== 0 && time > 0) {
             this.timer = setTimeout(() => {
-                this.state.isInGame = false;
-                this.state.playersReady = 0;
+                this.reset();
                 this.emit(Events.END);
             }, time * 1000);
         }
@@ -105,6 +104,7 @@ class TwoPlayerGame extends EventEmitter {
             this.setJoinKey();
         }
 
+        console.log('Creating new player', this.state.players.length === 0);
         const player = new Player(ws, this.state.players.length === 0);
         this.state.playersReady++;
         this.state.players.push(player);
@@ -141,10 +141,11 @@ class TwoPlayerGame extends EventEmitter {
         return this.state.letter;
     }
 
-    getPoints() {
+    getPoints(ws) {
         return this.state.players.map((player) => {
             return ({
                 isHost: player.isHost,
+                isYou: ws === player.ws,
                 points: player.points,
             });
         });
@@ -171,6 +172,7 @@ class TwoPlayerGame extends EventEmitter {
             ...this.getInitialState(),
             joinKey: this.state.joinKey,
             players: this.state.players,
+            playersReady: 0,
         };
 
         this.getPlayers().forEach((player) => {
@@ -201,11 +203,13 @@ class TwoPlayerGame extends EventEmitter {
         console.log('Broadcasting data to', this.getPlayers().length, 'players');
         this.getPlayers().forEach((player) => {
             try {
-                if (data && data.payload) {
-                    data.payload.isMe = player.ws === ws;
+                const newData = typeof data === 'function' ? data(player.ws) : data;
+
+                if (newData && newData.payload) {
+                    newData.payload.isMe = player.ws === ws;
                 }
 
-                player.send(data);
+                player.send(newData);
             } catch (e) {
                 console.error('< ERROR: ', e);
                 this.state.isInGame = false;
