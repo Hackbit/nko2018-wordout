@@ -179,7 +179,7 @@ table {
 
         private knownKey: string = '';
         private rematchTimer: any = null;
-        private waitingRematch: boolean = true;
+        private waitingRematch: boolean = false;
 
         get wpm(): number {
             return Math.round(this.words.length / (this.time / 60));
@@ -236,6 +236,7 @@ table {
             this.disposers.push(api.onGameStart(({ letter, count }) => {
                 clearTimeout(this.rematchTimer);
                 this.isInGame = true;
+                this.waitingRematch = false;
                 this.letter = letter.toUpperCase();
                 this.count = count;
                 this.timeLeft = this.time;
