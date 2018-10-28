@@ -17,7 +17,10 @@ export class Socket {
 
         this.connecting = true;
         this.connectionPromise = new Promise((resolve, reject) => {
-            this.socket = new WebSocket(new URL('/ws', window.location.href).href);
+            const url = new URL('/ws', window.location.href);
+
+            url.protocol = url.protocol.replace('http', 'ws');
+            this.socket = new WebSocket(url.href);
             this.socket.addEventListener('open', () => {
                 this.connected = true;
                 this.connecting = false;
