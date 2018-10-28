@@ -7,7 +7,7 @@
                 <h1 v-if="points === theirPoints">YOU WIN!</h1>
                 <div class="total-description">YOUR POINTS</div>
                 <word class="total" :word="points.toString()" />
-
+                <br />
                 <div class="total-description">THEIR POINTS</div>
                 <word class="total" :word="theirPoints.toString()" />
 
@@ -42,21 +42,22 @@
                 </table>
             </div>
 
-            <ui-button @click="startGame()">Re-match</ui-button>
+            <ui-button :isDisabled="!canRematch" @click="startGame()">Re-match <timer v-if="canRematch" :time="30"><span slot-scope="{ timeLeft }">Disabled in {{timeLeft}}</span></timer></ui-button>
             <ui-button to="/">Main Menu</ui-button>
         </box>
 
         <box v-if="!isInGame && !hasEnded">
             <h5>JOIN GAME</h5>
 
-            <ui-input v-model="joinKey" placeholder="Enter Key" />
-            <ui-button @click="startGame(joinKey)">JOIN GAME</ui-button>
+            <ui-input v-model="joinKey" placeholder="ENTER KEY" />
+            <ui-button :isDisabled="joinKey && this.isJoinKeySameAsHost" @click="startGame(joinKey)">JOIN GAME</ui-button>
 
             <h5>HOST GAME</h5>
+            <p v-if="hostKey">Tell your friend to enter the following:</p>
+            <br />
+            <ui-input :value="(hostKey || '').toUpperCase()" disabled placeholder="CREATE GAME FOR KEY" />
 
-            <ui-input :value="hostKey" disabled placeholder="CREATE GAME FOR KEY" />
-
-            <ui-button @click="startGame()">CREATE GAME</ui-button>
+            <ui-button  :isDisabled="!!hostKey"  @click="startGame()">{{ hostKey ? 'WAITING FOR PARTNER' : 'CREATE GAME' }}</ui-button>
         </box>
 
         <div v-if="isInGame">
@@ -166,6 +167,8 @@ table {
         public hostKey: string = '';
         public joinKey: string = '';
 
+        public canRematch: boolean = true;
+
         get wpm(): number {
             return Math.round(this.words.length / (this.time / 60));
         }
@@ -185,8 +188,15 @@ table {
             return this.words.filter((word) => word.isCommon && word.isValid).length;
         }
 
-        public startGame(key?: string) {
-            if (key === "") {
+        get isJoinKeySameAsHost(): boolean {
+            if (!!this.joinKey && this.joinKey.toUpperCase() === this.hostKey.toUpperCase()) {
+                return true;
+            }
+            return false;
+        }
+
+        public startGame(key: string|null = null) {
+            if (key === "" || (key === null && this.hostKey) || (key && this.isJoinKeySameAsHost)) {
                 return;
             }
 
@@ -224,6 +234,9 @@ table {
             api.onGameEnd(() => {
                 this.isInGame = false;
                 this.hasEnded = true;
+                this.canRematch = true;
+
+                setTimeout(() => this.canRematch = false, 30000);
             });
         }
 

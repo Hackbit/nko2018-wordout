@@ -33,6 +33,9 @@
 
     .title {
         padding-top: 55px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .actions {

@@ -1,7 +1,11 @@
 <template>
-     <div class="timer">
-        <div class="title">TIME</div>
-        <div class="amount">{{timeLeft}}</div>
+    <div>
+        <slot :timeLeft="timeLeft">
+            <div class="timer">
+                <div class="title">TIME</div>
+                <div class="amount">{{timeLeft}}</div>
+            </div>
+        </slot>
     </div>
 </template>
 
@@ -43,7 +47,8 @@ export default class Timer extends Vue {
 <style lang="scss" scoped>
 .timer {
     border: 1px solid white;
-
+    width: 100%;
+    height: 100%;
 }
 .title {
     background: white;

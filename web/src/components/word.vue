@@ -11,6 +11,7 @@
                     height: `${tileWidth}px`,
                     lineHeight: `${tileWidth}px`,
                     fontSize: `${fontSize}px`,
+                    color: `${word.toLowerCase()}`, // Could be fun why not eh?.
                 }">
                 {{letter.toUpperCase()}}
             </div>
@@ -125,9 +126,11 @@
     .tile {
         margin-left: 5px;
         margin-right: 5px;
+        color: darken($secondary, 30%);
 
         padding: 5px;
         background: $secondary;
+        background: radial-gradient(ellipse at center, #{$secondary} 0%,#{darken($secondary, 5%)} 100%);
         border-radius: 10px;
         text-align: center;
         box-shadow: 0px 6px 0px #{darken($secondary, 20%)}, 0px 3px 15px rgba(0,0,0,.4);
