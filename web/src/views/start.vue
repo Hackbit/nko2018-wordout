@@ -5,6 +5,8 @@
           <ui-button to="/game/single-player">SINGLE PLAYER</ui-button>
           <ui-button to="/game/two-player">2 PLAYER</ui-button>
           <ui-button to="/game/global">GLOBAL CHALLENGE</ui-button>
+
+          <ui-button @click="vote()">VOTE FOR THIS</ui-button>
       </div>
   </div>
 </template>
@@ -20,7 +22,11 @@
           UiButton,
       },
     })
-    export default class Start extends Vue {}
+    export default class Start extends Vue {
+        public vote() {
+            window.open('https://www.nodeknockout.com/entries/181-wordingout/vote', '_blank');
+        }
+    }
 </script>
 
 <style lang="scss" scoped>

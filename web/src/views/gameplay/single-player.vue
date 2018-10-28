@@ -121,6 +121,8 @@ table {
     import Word from '../../components/word.vue';
     import Box from '../../components/box.vue';
 
+    import { sound } from '@/services/sound';
+
     @Component({
         components: {
             Points,
@@ -205,6 +207,7 @@ table {
             this.words.push(item);
 
             api.submitWord(word).then((resp) => {
+                if (resp.isValid && !resp.isDuplicated) sound.play('valid');
                 this.points = resp.points as number;
                 item.isCommon = resp.isCommon;
                 item.isDuplicated = resp.isDuplicated;

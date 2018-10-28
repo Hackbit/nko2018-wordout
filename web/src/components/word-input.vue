@@ -11,7 +11,7 @@
                 @keydown="onKeyDown($event)"
                 @keydown.enter="onChange()"
                 :value="currentWord"
-                @input="currentWord = $event.target.value"
+                @input="inputWord($event.target.value)"
             />
         </div>
     </div>
@@ -20,6 +20,7 @@
 <script lang="ts">
     import { Component, Vue, Emit } from 'vue-property-decorator';
     import Word from './word.vue';
+    import { sound } from '@/services/sound';
 
     @Component({
         components: {
@@ -34,13 +35,21 @@
             const key: string = String.fromCharCode(code);
 
             if (code === 13 || code === 8) {
+                sound.play('type');
                 return;
             }
 
             if (!(/[a-z\-]/ig.test(key))) {
                 event.preventDefault();
                 event.stopPropagation();
+                return;
             }
+
+            sound.play('type');
+        }
+
+        public inputWord(word: string) {
+            this.currentWord = word;
         }
 
         @Emit('change')

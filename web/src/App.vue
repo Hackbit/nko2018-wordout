@@ -3,10 +3,11 @@
 
         <background></background>
         <div class="page">
-            <div class="center" v-if="!isConnected">
+            <div class="center" v-if="!isLoaded">
+                <p class="loading">Connecting and loading audio... please wait.</p>
                 <word class="word--wordout" word="..." />
             </div>
-            <router-view v-if="isConnected" />
+            <router-view v-if="isLoaded" />
         </div>
     </div>
 </template>
@@ -17,7 +18,8 @@
     import Background from './components/background.vue';
     import Box from './components/box.vue';
     import Word from './components/word.vue';
-import { api } from '@/services/api';
+    import { api } from '@/services/api';
+    import { sound } from '@/services/sound';
 
     @Component({
         components: {
@@ -28,8 +30,23 @@ import { api } from '@/services/api';
     })
     export default class AppComponent extends Vue {
         public isConnected: boolean = false;
+        public hasAudioLoaded: boolean = false;
+
+        get isLoaded() {
+            return this.isConnected && this.hasAudioLoaded;
+        }
 
         public mounted() {
+            sound.addSound('background', true, true, 0.3);
+            sound.addSound('click');
+            sound.addSound('type');
+            sound.addSound('valid');
+
+            sound.load().then(() => {
+                console.log('All sounds loaded');
+                this.hasAudioLoaded = true;
+            });
+
             api.onConnected((isConnected) => {
                 if (isConnected === true && !this.isConnected) {
                     // Throw the user out of any game...
@@ -55,6 +72,12 @@ import { api } from '@/services/api';
         transform: translate(-50%, -50%);
     }
 
+    .loading {
+        color: white;
+        font-weight: bold;
+        font-size: 8px;
+    }
+
     html {
         font-family: Helvetica, Arial, sans-serif;
     }
@@ -70,6 +93,11 @@ import { api } from '@/services/api';
         font-weight: bold;
         font-size: 20px;
         margin-top: 15px;
+        margin-bottom: 10px;
+    }
+
+    p {
+        margin-top: 10px;
         margin-bottom: 10px;
     }
 

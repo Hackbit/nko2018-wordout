@@ -167,6 +167,7 @@ module.exports = (app, expWs) => {
                                         type: 'game-start',
                                         payload: {
                                             letter: currentGame.getLetter(),
+                                            points: currentGame.getPoints(),
                                             count: currentGame.getTotalWordCountForLetter(),
                                             endsIn: time
                                         }
@@ -175,6 +176,7 @@ module.exports = (app, expWs) => {
 
                                 return reply({
                                     letter: currentGame.getLetter(),
+                                    points: currentGame.getPoints(),
                                     count: currentGame.getTotalWordCountForLetter(),
                                     endsIn: time,
                                 });

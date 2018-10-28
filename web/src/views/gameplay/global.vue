@@ -6,7 +6,9 @@
             <p>
                 The global challenge gives everyone one letter to begin with. The game is reset daily. The game is won by every single word starting with a particular letter being entered.
             </p>
-
+            <p>
+                Yes... It's not really well thought out but maybe it'l happen.
+            </p>
             <ui-button @click="startGame()">JOIN GAME</ui-button>
         </box>
 
@@ -88,6 +90,8 @@ table {
     import Word from '../../components/word.vue';
     import Box from '../../components/box.vue';
 
+    import { sound } from '@/services/sound';
+
     @Component({
         components: {
             Points,
@@ -130,7 +134,7 @@ table {
             return this.words.filter((word) => word.isCommon && word.isValid).length;
         }
 
-        public onGameStart({ letter, count, endsIn }: IStartResponse) {
+        public onGameStart({ letter, count, points, endsIn }: IStartResponse) {
             this.isInGame = true;
             this.letter = letter.toUpperCase();
             this.count = count;
@@ -147,6 +151,9 @@ table {
             this.disposers.push(api.onGameStart((res) => this.onGameStart(res)));
 
             this.disposers.push(api.onWordAdded((word) => {
+                if (word.isValid && !word.isDuplicated && word.isMe) {
+                    sound.play('valid');
+                }
                 this.words.push({
                     word: word.word,
                     isCommon: word.isCommon,

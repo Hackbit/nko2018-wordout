@@ -19,6 +19,7 @@ export interface IStartResponse {
 export interface IStartResponse {
     letter: string;
     count: number;
+    points: number;
 }
 
 export interface IStartMultiResponse {

@@ -1,14 +1,15 @@
 <template>
-    <div>
-        <router-link v-if="$attrs.to" @click="$emit('click')" :to="$attrs.to" :class="['button', { 'button--disabled': isDisabled }]">
+    <div @click="click()">
+        <router-link v-if="$attrs.to" :to="$attrs.to" :class="['button', { 'button--disabled': isDisabled }]">
             <slot></slot>
         </router-link>
-        <button v-if="!$attrs.to" @click="$emit('click')" :class="['button', { 'button--disabled': isDisabled }]"><slot></slot></button>
+        <button v-if="!$attrs.to" :class="['button', { 'button--disabled': isDisabled }]"><slot></slot></button>
     </div>
 </template>
 
 <script lang="ts">
     import { Component, Prop, Vue } from 'vue-property-decorator';
+    import { sound } from '@/services/sound';
 
     @Component({
         inheritAttrs: false,
@@ -16,6 +17,11 @@
     export default class UiButton extends Vue {
         @Prop(Boolean)
         public isDisabled!: boolean;
+
+        public click() {
+            sound.play('click');
+            this.$emit('click');
+        }
     }
 </script>
 

@@ -138,6 +138,8 @@ table {
     import Word from '../../components/word.vue';
     import Box from '../../components/box.vue';
 
+    import { sound } from '@/services/sound';
+
     @Component({
         components: {
             Points,
@@ -190,6 +192,7 @@ table {
         }
 
         get isJoinKeySameAsHost(): boolean {
+            const hostKey = this.hostKey
             if (!!this.joinKey && this.joinKey.toUpperCase() === this.hostKey.toUpperCase()) {
                 return true;
             }
@@ -219,6 +222,9 @@ table {
             }));
 
             this.disposers.push(api.onWordAdded((word) => {
+                if (word.isValid && !word.isDuplicated && word.isMe) {
+                    sound.play('valid');
+                }
                 this.words.push({
                     word: word.word,
                     isCommon: word.isCommon,
