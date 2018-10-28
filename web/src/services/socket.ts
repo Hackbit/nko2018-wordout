@@ -17,7 +17,7 @@ export class Socket {
 
         this.connecting = true;
         this.connectionPromise = new Promise((resolve, reject) => {
-            this.socket = new WebSocket('/ws');
+            this.socket = new WebSocket(new URL('/ws', window.location.href).href);
             this.socket.addEventListener('open', () => {
                 this.connected = true;
                 this.connecting = false;

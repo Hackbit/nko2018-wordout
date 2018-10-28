@@ -16,7 +16,7 @@
             <p>Earn points based on the longer the word and how common it is</p>
             <h5>Settings</h5>
             <label>Game Duration (seconds)</label>
-            <ui-input :value="time" type="number" v-model="time" />
+            <ui-input :value="time" type="number" @change="time = $event.target.value" />
             <ui-button @click="startGame()">Start Game</ui-button>
         </box>
 
