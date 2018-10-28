@@ -22,18 +22,36 @@ export class Socket {
 
             url.protocol = url.protocol.replace('http', 'ws');
 
-            if (process.env.NODE_ENV !== "production" && url.port === "8081") {
-                url.port = "8080";
+            if (process.env.NODE_ENV !== 'production' && url.port === '8081') {
+                url.port = '8080';
             }
 
             this.socket = new WebSocket(url.href);
             this.socket.addEventListener('open', () => {
-                this.connected = true;
+                this.setConnected(true);
                 this.connecting = false;
                 resolve(true);
             });
 
-            this.socket.addEventListener('error', this.onError.bind(this));
+            this.socket.addEventListener('error', () => {
+                this.emit('closed', { backend: false });
+                this.connecting = false;
+                this.setConnected(false);
+                this.socket = undefined;
+                this.connect();
+            });
+
+            this.socket.addEventListener('close', (ev) => {
+                console.error('Connection Terminated', ev.wasClean);
+                this.emit('closed', { backend: true });
+
+                if (!ev.wasClean) {
+                    this.connecting = false;
+                    this.setConnected(false);
+                    this.socket = undefined;
+                    this.connect();
+                }
+            });
 
             this.socket.addEventListener('message', (event: MessageEvent) => {
                 this.onMessage(event.data);
@@ -125,9 +143,9 @@ export class Socket {
         }
     }
 
-    public onError(error: Error) {
-        this.connected = false;
-        console.error(error);
+    private setConnected(isConnected: boolean) {
+        this.connected = isConnected;
+        this.emit('connected', isConnected);
     }
 }
 

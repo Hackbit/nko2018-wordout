@@ -68,6 +68,10 @@ export class Api {
     public onWordAdded(handler: (word: IAddResponse) => void) {
         return socket.addHandler('add-word', handler);
     }
+
+    public onConnected(handler: (isConnected: boolean) => void) {
+        return socket.addHandler('connected', handler);
+    }
 }
 
 export const api = new Api();
