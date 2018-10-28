@@ -41,7 +41,7 @@
             <p>Earn points based on the longer the word and how common it is</p>
             <h5>Settings</h5>
             <label>Game Duration (seconds)</label>
-            <ui-input :value="time || 60" type="number" @input="time = +$event" />
+            <ui-input @send="startGame()" :value="time || 60" type="number" @input="time = +$event" />
             <ui-button @click="startGame()">Start Game</ui-button>
         </box>
 

@@ -1,5 +1,5 @@
 <template>
-    <input class="input" @input="$emit('input', $event.target.value)" @change="$emit('change', $event.target.value)"/>
+    <input class="input" @input="$emit('input', $event.target.value)" @keydown.enter="send($event.target.value)" @change="$emit('change', $event.target.value)"/>
 </template>
 
 <script lang="ts">
@@ -9,6 +9,10 @@
         inheritAttrs: true,
     })
     export default class UiInput extends Vue {
+        public send(value: string) {
+            this.$emit('change', value);
+            this.$emit('send');
+        }
     }
 </script>
 

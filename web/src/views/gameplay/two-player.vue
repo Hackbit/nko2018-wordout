@@ -53,7 +53,7 @@
 
             <h5>JOIN GAME</h5>
 
-            <ui-input v-model="joinKey" placeholder="ENTER KEY" />
+            <ui-input @send="startGame(joinKey)" v-model="joinKey" placeholder="ENTER KEY" />
             <ui-button :isDisabled="joinKey && this.isJoinKeySameAsHost" @click="startGame(joinKey)">JOIN GAME</ui-button>
 
             <h5>HOST GAME</h5>

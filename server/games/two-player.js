@@ -215,7 +215,7 @@ class TwoPlayerGame extends EventEmitter {
     }
 
     isReady() {
-        return this.getPlayers().length === 2 && !this.isInGame();
+        return this.getPlayers().length === 2 && !this.isInGame() && this.state.playersReady === 2;
     }
 
     getInitialState() {
