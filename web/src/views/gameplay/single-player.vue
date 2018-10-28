@@ -60,6 +60,7 @@
 
 <style lang="scss" scoped>
 .stats {
+    padding: 10px;
     display: flex;
     flex-direction: row;
     flex-grow: 1;

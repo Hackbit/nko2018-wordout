@@ -47,6 +47,10 @@
         </box>
 
         <box v-if="!isInGame && !hasEnded">
+            <h5>How to play</h5>
+            <p>Click the start game button and look for the letter at the top of the screen. Type words (and submit with enter) that begin with that letter. Once the times up it's over!</p>
+            <p>Earn points based on the longer the word and how common it is</p>
+
             <h5>JOIN GAME</h5>
 
             <ui-input v-model="joinKey" placeholder="ENTER KEY" />
@@ -75,6 +79,7 @@
 
 <style lang="scss" scoped>
 .stats {
+    padding: 10px;
     display: flex;
     flex-direction: row;
     flex-grow: 1;
