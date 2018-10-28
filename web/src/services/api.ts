@@ -3,6 +3,7 @@ import { socket } from './socket';
 export interface IAddResponse {
     isDuplicated: boolean;
     isValid: boolean;
+    isCommon: boolean;
     points: number;
     wordPoints: number;
 }

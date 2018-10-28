@@ -1,13 +1,38 @@
 <template>
     <div class="home">
         <box v-if="hasEnded">
-            <h1>Times Up!</h1>
-            <p>
-                You scored {{points}} points in total!
-                Words per minute: {{ wpm }}
-            </p>
+            <div>
+                <div class="total-description">TOTAL POINTS</div>
+                <word class="total" :word="points.toString()" />
 
-            <ui-button @click="startGame()">Start Game</ui-button>
+                <!-- Feel like I haven't written a table in years -->
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Words</th>
+                            <td>{{validWords}}</td>
+                        </tr>
+
+                        <tr>
+                            <th>WPM</th>
+                            <td>{{wpm}}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Common Words</th>
+                            <td>{{commonWords}}</td>
+                        </tr>
+
+                        <tr v-if="bestWord">
+                            <th>Best Word</th>
+                            <td>{{bestWord.word}} (+{{bestWord.points}})</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <ui-button @click="startGame()">Play Again</ui-button>
+            <ui-button to="/">Main Menu</ui-button>
         </box>
 
         <box v-if="!isInGame && !hasEnded">
@@ -16,7 +41,7 @@
             <p>Earn points based on the longer the word and how common it is</p>
             <h5>Settings</h5>
             <label>Game Duration (seconds)</label>
-            <ui-input :value="time" type="number" @change="time = $event.target.value" />
+            <ui-input :value="time || 60" type="number" @input="time = +$event" />
             <ui-button @click="startGame()">Start Game</ui-button>
         </box>
 
@@ -51,6 +76,31 @@ label {
     margin-bottom: 5px;
     font-weight: bold;
 }
+
+.total, .total-description {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    th {
+
+        padding: 5px 0px;
+        text-align: left;
+        font-weight: bold;
+    }
+    td {
+        text-align: right;
+    }
+}
+ .total-description{
+     text-align: center;
+     font-size: 30px;
+ }
 </style>
 
 
@@ -93,6 +143,21 @@ label {
 
         get wpm(): number {
             return this.words.length / (this.time / 60);
+        }
+
+        get bestWord(): IWord|null {
+            return this.words.reduce<IWord|null>(
+                (prev, curr) => prev ? prev.points > curr.points ? prev : curr : curr,
+                null,
+            );
+        }
+
+        get validWords(): number {
+            return this.words.filter((word) => word.isValid).length;
+        }
+
+        get commonWords(): number {
+            return this.words.filter((word) => word.isCommon && word.isValid).length;
         }
 
         public startGame() {

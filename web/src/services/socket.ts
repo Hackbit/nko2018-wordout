@@ -20,6 +20,11 @@ export class Socket {
             const url = new URL('/ws', window.location.href);
 
             url.protocol = url.protocol.replace('http', 'ws');
+
+            if (process.env.NODE_ENV !== "production" && url.port === "8081") {
+                url.port = "8080";
+            }
+
             this.socket = new WebSocket(url.href);
             this.socket.addEventListener('open', () => {
                 this.connected = true;
